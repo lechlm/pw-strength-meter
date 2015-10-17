@@ -15,219 +15,219 @@ An element for checking the password complexity.
 
 Example:
 
-    <pw-strength-meter></pw-strength-meter>
+  <pw-strength-meter></pw-strength-meter>
 
 @demo
 -->
 <dom-module id="pw-strength-meter">
 
-    <style>
-        :host {
-            display: inline-block;
-            @apply(--pw-strength-meter);
-        }
+<style>
+  :host {
+    display: inline-block;
+    @apply(--pw-strength-meter);
+  }
 
-        iron-icon {
-            margin-right: -3px;
-            --iron-icon-width: var(--pw-strength-meter-icon-size, 24px);
-            --iron-icon-height: var(--pw-strength-meter-icon-size, 24px);
-        }
+  iron-icon {
+    margin-right: -3px;
+    --iron-icon-width: var(--pw-strength-meter-icon-size, 24px);
+    --iron-icon-height: var(--pw-strength-meter-icon-size, 24px);
+  }
 
-        .icon-lock-open {
-            fill: #BBBCBC;
-        }
+  .icon-lock-open {
+    fill: #BBBCBC;
+  }
 
-        .icon-strong {
-            fill: var(--pw-strength-meter-strong-color, #55BB4B);
-        }
+  .icon-strong {
+    fill: var(--pw-strength-meter-strong-color, #55BB4B);
+  }
 
-        .icon-medium {
-            fill: var(--pw-strength-meter-medium-color, #E9AB27);
-        }
+  .icon-medium {
+    fill: var(--pw-strength-meter-medium-color, #E9AB27);
+  }
 
-        .icon-weak {
-            fill: var(--pw-strength-meter-weak-color, #D93B26);
-        }
-    </style>
+  .icon-weak {
+    fill: var(--pw-strength-meter-weak-color, #D93B26);
+  }
+</style>
 
-    <template>
-        <div id="iconContainer"></div>
-        <div id="messageContainer"></div>
-    </template>
+<template>
+  <div id="iconContainer"></div>
+  <div id="messageContainer"></div>
+</template>
 
 </dom-module>
 
 <script>
 
-    Polymer({
+Polymer({
 
-        is: 'pw-strength-meter',
+  is: 'pw-strength-meter',
 
-        properties: {
+  properties: {
 
-            /**
-             * currently entered password
-             */
-            password: {
-                type: String,
-                observer: '_passwordChanged'
-            },
+    /**
+    * currently entered password
+    */
+    password: {
+      type: String,
+      observer: '_passwordChanged'
+    },
 
-            /**
-             * returns the current rating depending on the currently entered password.
-             *
-             * minimum value: 0
-             *
-             * maximum value: 10
-             */
-            rating: {
-                type: Number,
-                readOnly: true,
-                value: 0
-            },
+    /**
+    * returns the current rating depending on the currently entered password.
+    *
+    * minimum value: 0
+    *
+    * maximum value: 10
+    */
+    rating: {
+      type: Number,
+      readOnly: true,
+      value: 0
+    },
 
 
-            /**
-             * constant for icon types
-             */
-            _iconTypes: {
-                type: Object,
-                readOnly: true,
-                value: {
-                    lock: {
-                        type: String,
-                        value: "lock"
-                    },
-
-                    lockOpen: {
-                        type: String,
-                        value: "lock-open"
-                    }
-                }
-            },
-
-            /**
-             * constant for message types
-             */
-            _messageTypes: {
-                type: Object,
-                readOnly: true,
-                value: {
-                    strong: {
-                        type: String,
-                        value: "strong"
-                    },
-
-                    medium: {
-                        type: String,
-                        value: "medium"
-                    },
-
-                    weak: {
-                        type: String,
-                        value: "weak"
-                    }
-                }
-            }
+    /**
+    * constant for icon types
+    */
+    _iconTypes: {
+      type: Object,
+      readOnly: true,
+      value: {
+        lock: {
+          type: String,
+          value: "lock"
         },
 
-        // Element Behavior
-
-        _applyRating: function() {
-            // determine class value and message type depending on the new password rating
-            if(this.rating<=4) {
-                iconClass = 'icon-weak';
-                message = this._messageTypes.weak.value;
-            } else if(this.rating<=8) {
-                iconClass = 'icon-medium';
-                message = this._messageTypes.medium.value;
-            } else {
-                iconClass = 'icon-strong';
-                message = this._messageTypes.strong.value;
-            }
-
-            // init dom sections
-            Polymer.dom(this.$.iconContainer).textContent = '';
-            Polymer.dom(this.$.messageContainer).textContent = '';
-
-            // fill icon section
-            for(i=1; i<=10; i++) {
-                icon = document.createElement('iron-icon');
-
-                if(i<=this.rating) {
-                    icon.icon      = this._iconTypes.lock.value;
-                    icon.classList.add(iconClass);
-                } else {
-                    icon.icon      = this._iconTypes.lockOpen.value;
-                    icon.classList.add('icon-lock-open');
-                }
-
-                Polymer.dom(this.$.iconContainer).appendChild(icon);
-            }
-
-            // fill message section
-            messageContent = document.createElement('content');
-            messageContent.select = "[".concat(message,"]");
-            Polymer.dom(this.$.messageContainer).appendChild(messageContent);
-
-            Polymer.dom.flush();
-        },
-
-
-        /**
-         * determine password complexity
-         */
-        _passwordChanged: function() {
-            // init rating
-            this._setRating(0);
-
-            // a password with less than eight characters is always weak
-            if(this.password.length < 8) {
-                if (this.password) {
-                    this._setRating(1);
-                }
-                this._applyRating();
-                return;
-            }
-
-            // award every unique letter
-            var letters = new Object();
-            for (var i=0; i<this.password.length; i++) {
-                letters[this.password[i]] = (letters[this.password[i]] || 0) + 1;
-                this._setRating(this.rating + (0.2 / letters[this.password[i]]));
-            }
-
-            // set a maximum of 4 for length and variation of characters
-            if(this.rating > 4) {
-                this._setRating(4);
-            }
-
-            // bonus points for mixing it up
-            var variations = {
-                digits: /\d/.test(this.password),
-                lower: /[a-z]/.test(this.password),
-                upper: /[A-Z]/.test(this.password),
-                nonWords: /\W/.test(this.password),
-            }
-
-            var variationCount = 0;
-            for (var check in variations) {
-                variationCount += (variations[check] == true) ? 1.5 : 0;
-            }
-            this._setRating(Math.round(this.rating + variationCount));
-
-            this._applyRating();
-        },
-
-
-        // Element Lifecycle
-
-        ready: function () {
-
-            // initialize lock icons
-            this._applyRating();
+        lockOpen: {
+          type: String,
+          value: "lock-open"
         }
+      }
+    },
 
-    });
+    /**
+    * constant for message types
+    */
+    _messageTypes: {
+      type: Object,
+      readOnly: true,
+      value: {
+        strong: {
+          type: String,
+          value: "strong"
+        },
+
+        medium: {
+          type: String,
+          value: "medium"
+        },
+
+        weak: {
+          type: String,
+          value: "weak"
+        }
+      }
+    }
+  },
+
+  // Element Behavior
+
+  _applyRating: function() {
+    // determine class value and message type depending on the new password rating
+    if(this.rating<=4) {
+      iconClass = 'icon-weak';
+      message = this._messageTypes.weak.value;
+    } else if(this.rating<=8) {
+      iconClass = 'icon-medium';
+      message = this._messageTypes.medium.value;
+    } else {
+      iconClass = 'icon-strong';
+      message = this._messageTypes.strong.value;
+    }
+
+    // init dom sections
+    Polymer.dom(this.$.iconContainer).textContent = '';
+    Polymer.dom(this.$.messageContainer).textContent = '';
+
+    // fill icon section
+    for(i=1; i<=10; i++) {
+      icon = document.createElement('iron-icon');
+
+      if(i<=this.rating) {
+        icon.icon      = this._iconTypes.lock.value;
+        icon.classList.add(iconClass);
+      } else {
+        icon.icon      = this._iconTypes.lockOpen.value;
+        icon.classList.add('icon-lock-open');
+      }
+
+      Polymer.dom(this.$.iconContainer).appendChild(icon);
+    }
+
+    // fill message section
+    messageContent = document.createElement('content');
+    messageContent.select = "[".concat(message,"]");
+    Polymer.dom(this.$.messageContainer).appendChild(messageContent);
+
+    Polymer.dom.flush();
+  },
+
+
+  /**
+  * determine password complexity
+  */
+  _passwordChanged: function() {
+    // init rating
+    this._setRating(0);
+
+    // a password with less than eight characters is always weak
+    if(this.password.length < 8) {
+      if (this.password) {
+        this._setRating(1);
+      }
+      this._applyRating();
+      return;
+    }
+
+    // award every unique letter
+    var letters = new Object();
+    for (var i=0; i<this.password.length; i++) {
+      letters[this.password[i]] = (letters[this.password[i]] || 0) + 1;
+      this._setRating(this.rating + (0.2 / letters[this.password[i]]));
+    }
+
+    // set a maximum of 4 for length and variation of characters
+    if(this.rating > 4) {
+      this._setRating(4);
+    }
+
+    // bonus points for mixing it up
+    var variations = {
+      digits: /\d/.test(this.password),
+      lower: /[a-z]/.test(this.password),
+      upper: /[A-Z]/.test(this.password),
+      nonWords: /\W/.test(this.password),
+    }
+
+    var variationCount = 0;
+    for (var check in variations) {
+      variationCount += (variations[check] == true) ? 1.5 : 0;
+    }
+    this._setRating(Math.round(this.rating + variationCount));
+
+    this._applyRating();
+  },
+
+
+  // Element Lifecycle
+
+  ready: function () {
+
+    // initialize lock icons
+    this._applyRating();
+  }
+
+});
 
 </script>
