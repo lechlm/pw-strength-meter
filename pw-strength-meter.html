@@ -27,6 +27,10 @@ Example:
     @apply(--pw-strength-meter);
   }
 
+  [hidden] {
+    display: none;
+  }
+
   iron-icon {
     margin-right: -3px;
     --iron-icon-width: var(--pw-strength-meter-icon-size, 24px);
@@ -52,7 +56,15 @@ Example:
 
 <template>
   <div id="iconContainer"></div>
-  <div id="messageContainer"></div>
+  <div id="weakMsg" hidden$="[[!_showWeakMsg(rating)]]">
+    <content select="[weak]"></content>
+  </div>
+  <div id="mediumMsg" hidden$="[[!_showMediumMsg(rating)]]">
+    <content select="[medium]"></content>
+  </div>
+  <div id="strongMsg" hidden$="[[!_showStrongMsg(rating)]]">
+    <content select="[strong]"></content>
+  </div>
 </template>
 
 </dom-module>
@@ -93,40 +105,18 @@ Polymer({
     _iconTypes: {
       type: Object,
       readOnly: true,
-      value: {
-        lock: {
-          type: String,
-          value: "lock"
-        },
+      value: function() {
+        return {
+          lock: {
+            type: String,
+            value: "lock"
+          },
 
-        lockOpen: {
-          type: String,
-          value: "lock-open"
-        }
-      }
-    },
-
-    /**
-    * constant for message types
-    */
-    _messageTypes: {
-      type: Object,
-      readOnly: true,
-      value: {
-        strong: {
-          type: String,
-          value: "strong"
-        },
-
-        medium: {
-          type: String,
-          value: "medium"
-        },
-
-        weak: {
-          type: String,
-          value: "weak"
-        }
+          lockOpen: {
+            type: String,
+            value: "lock-open"
+          }
+        };
       }
     }
   },
@@ -137,18 +127,14 @@ Polymer({
     // determine class value and message type depending on the new password rating
     if(this.rating<=4) {
       iconClass = 'icon-weak';
-      message = this._messageTypes.weak.value;
     } else if(this.rating<=8) {
       iconClass = 'icon-medium';
-      message = this._messageTypes.medium.value;
     } else {
       iconClass = 'icon-strong';
-      message = this._messageTypes.strong.value;
     }
 
     // init dom sections
     Polymer.dom(this.$.iconContainer).textContent = '';
-    Polymer.dom(this.$.messageContainer).textContent = '';
 
     // fill icon section
     for(i=1; i<=10; i++) {
@@ -164,28 +150,41 @@ Polymer({
 
       Polymer.dom(this.$.iconContainer).appendChild(icon);
     }
-
-    // fill message section
-    messageContent = document.createElement('content');
-    messageContent.select = "[".concat(message,"]");
-    Polymer.dom(this.$.messageContainer).appendChild(messageContent);
-
-    Polymer.dom.flush();
   },
 
+  /**
+   * Show message for weak passwords if rating is <= 4.
+   */
+  _showWeakMsg: function() {
+    return this.rating <= 4;
+  },
+
+  /**
+   * Show message for medium passwords if 4 < rating <= 8.
+   */
+  _showMediumMsg: function() {
+    return this.rating > 4 && this.rating <= 8;
+  },
+
+  /**
+   * Show message for strong passwords if rating is > 8.
+   */
+  _showStrongMsg: function() {
+    return this.rating > 8;
+  },
 
   /**
   * determine password complexity
   */
   _passwordChanged: function() {
-    // init rating
-    this._setRating(0);
+    var rating = 0;
 
     // a password with less than eight characters is always weak
     if(this.password.length < 8) {
       if (this.password) {
-        this._setRating(1);
+        rating = 1;
       }
+      this._setRating(rating);
       this._applyRating();
       return;
     }
@@ -194,12 +193,12 @@ Polymer({
     var letters = new Object();
     for (var i=0; i<this.password.length; i++) {
       letters[this.password[i]] = (letters[this.password[i]] || 0) + 1;
-      this._setRating(this.rating + (0.2 / letters[this.password[i]]));
+      rating = rating + (0.2 / letters[this.password[i]]);
     }
 
     // set a maximum of 4 for length and variation of characters
-    if(this.rating > 4) {
-      this._setRating(4);
+    if(rating > 4) {
+      rating = 4;
     }
 
     // bonus points for mixing it up
@@ -214,11 +213,11 @@ Polymer({
     for (var check in variations) {
       variationCount += (variations[check] == true) ? 1.5 : 0;
     }
-    this._setRating(Math.round(this.rating + variationCount));
+    rating = Math.round(rating + variationCount);
 
+    this._setRating(rating);
     this._applyRating();
   },
-
 
   // Element Lifecycle
 
