@@ -14,12 +14,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>pw-strength-meter Demo</title>
       <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../pw-strength-meter.html">
-    <script type="text/javascript">
-      function setPassword(e) {
-        document.querySelector('#pass').setAttribute('password', e.value);
-      }
-    </script>
+      <link rel="import" href="../../iron-icons/iron-icons.html">
+      <link rel="import" href="../pw-strength-meter.html">
+      <script type="text/javascript">
+        function setPassword(e) {
+          document.querySelector('#pass').setAttribute('password', e.value);
+          document.querySelector('#pass2').setAttribute('password', e.value);
+        }
+      </script>
+
+      <style is="custom-style">
+        #pass2 {
+          --pw-strength-meter-icon: {
+            margin-right: 4px;
+            fill: grey;
+          }
+        }
+      </style>
   </head>
   <body>
 
@@ -31,6 +42,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <span strong>Very Strong</span>
       <span medium>Medium</span>
       <span weak>Weak</span>
+    </pw-strength-meter>
+
+    <br>
+    <br>
+
+    <pw-strength-meter rating-on-icon="thumb-up" rating-off-icon="thumb-down" id="pass2">
+      <span strong>Good boy!</span>
+      <span medium>We're getting there!</span>
+      <span weak>No no no, give me more!</span>
     </pw-strength-meter>
 
   </body>
