@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 
 <!--
 An element for checking the password complexity.
@@ -33,12 +33,11 @@ Example:
 
   iron-icon {
     margin-right: -3px;
+    fill: #BBBCBC;
     --iron-icon-width: var(--pw-strength-meter-icon-size, 24px);
     --iron-icon-height: var(--pw-strength-meter-icon-size, 24px);
-  }
 
-  .icon-lock-open {
-    fill: #BBBCBC;
+    @apply(--pw-strength-meter-icon);
   }
 
   .icon-strong {
@@ -55,7 +54,18 @@ Example:
 </style>
 
 <template>
-  <div id="iconContainer"></div>
+  <div id="iconContainer">
+    <iron-icon icon$="[[_computeIcon(rating, 1)]]" class$="[[_computeIconClass(rating, 1)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 2)]]" class$="[[_computeIconClass(rating, 2)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 3)]]" class$="[[_computeIconClass(rating, 3)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 4)]]" class$="[[_computeIconClass(rating, 4)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 5)]]" class$="[[_computeIconClass(rating, 5)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 6)]]" class$="[[_computeIconClass(rating, 6)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 7)]]" class$="[[_computeIconClass(rating, 7)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 8)]]" class$="[[_computeIconClass(rating, 8)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 9)]]" class$="[[_computeIconClass(rating, 9)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 10)]]" class$="[[_computeIconClass(rating, 10)]]"></iron-icon>
+  </div>
   <div id="weakMsg" hidden$="[[!_showWeakMsg(rating)]]">
     <content select="[weak]"></content>
   </div>
@@ -94,61 +104,23 @@ Polymer({
     */
     rating: {
       type: Number,
-      readOnly: true,
-      value: 0
+      readOnly: true
     },
 
+    /**
+     * Icon to show for not reached rating points.
+     */
+    ratingOffIcon: {
+      type: String,
+      value: 'lock-open'
+    },
 
     /**
-    * constant for icon types
-    */
-    _iconTypes: {
-      type: Object,
-      readOnly: true,
-      value: function() {
-        return {
-          lock: {
-            type: String,
-            value: "lock"
-          },
-
-          lockOpen: {
-            type: String,
-            value: "lock-open"
-          }
-        };
-      }
-    }
-  },
-
-  // Element Behavior
-
-  _applyRating: function() {
-    // determine class value and message type depending on the new password rating
-    if(this.rating<=4) {
-      iconClass = 'icon-weak';
-    } else if(this.rating<=8) {
-      iconClass = 'icon-medium';
-    } else {
-      iconClass = 'icon-strong';
-    }
-
-    // init dom sections
-    Polymer.dom(this.$.iconContainer).textContent = '';
-
-    // fill icon section
-    for(i=1; i<=10; i++) {
-      icon = document.createElement('iron-icon');
-
-      if(i<=this.rating) {
-        icon.icon      = this._iconTypes.lock.value;
-        icon.classList.add(iconClass);
-      } else {
-        icon.icon      = this._iconTypes.lockOpen.value;
-        icon.classList.add('icon-lock-open');
-      }
-
-      Polymer.dom(this.$.iconContainer).appendChild(icon);
+     * Icon to show for reached rating points.
+     */
+    ratingOnIcon: {
+      type: String,
+      value: 'lock'
     }
   },
 
@@ -174,6 +146,28 @@ Polymer({
   },
 
   /**
+   * Compute witch icon to show depending on the current rating.
+   */
+  _computeIcon: function(rating, icoNo) {
+    return rating < icoNo ? this.ratingOffIcon : this.ratingOnIcon;
+  },
+
+  /**
+   * Add classes to the icons depending on the current rating.
+   */
+  _computeIconClass: function(rating, icoNo) {
+    if (this.rating < icoNo) return '';
+
+    if (this.rating <= 4) {
+      return 'icon-weak';
+    } else if (this.rating <= 8) {
+      return 'icon-medium';
+    } else {
+      return 'icon-strong';
+    }
+  },
+
+  /**
   * determine password complexity
   */
   _passwordChanged: function() {
@@ -185,7 +179,6 @@ Polymer({
         rating = 1;
       }
       this._setRating(rating);
-      this._applyRating();
       return;
     }
 
@@ -216,15 +209,14 @@ Polymer({
     rating = Math.round(rating + variationCount);
 
     this._setRating(rating);
-    this._applyRating();
   },
 
   // Element Lifecycle
 
-  ready: function () {
+  attached: function () {
 
     // initialize lock icons
-    this._applyRating();
+    this._setRating(0);
   }
 
 });
