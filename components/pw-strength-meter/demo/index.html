@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>pw-strength-meter Demo</title>
+      <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+      <link rel="import" href="../../iron-icons/iron-icons.html">
+      <link rel="import" href="../pw-strength-meter.html">
+      <script type="text/javascript">
+        function setPassword(e) {
+          document.querySelector('#pass').setAttribute('password', e.value);
+          document.querySelector('#pass2').setAttribute('password', e.value);
+        }
+      </script>
+
+      <style is="custom-style">
+        #pass2 {
+          --pw-strength-meter-icon: {
+            margin-right: 4px;
+            fill: grey;
+          }
+        }
+      </style>
+  </head>
+  <body>
+
+    <p>An example of <code>&lt;pw-strength-meter&gt;</code>:</p>
+
+    <input type="password" onkeyup="setPassword(this)" /><br><br>
+
+    <pw-strength-meter id="pass">
+      <span strong>Very Strong</span>
+      <span medium>Medium</span>
+      <span weak>Weak</span>
+    </pw-strength-meter>
+
+    <br>
+    <br>
+
+    <pw-strength-meter rating-on-icon="thumb-up" rating-off-icon="thumb-down" id="pass2">
+      <span strong>Good boy!</span>
+      <span medium>We're getting there!</span>
+      <span weak>No no no, give me more!</span>
+    </pw-strength-meter>
+
+  </body>
+</html>

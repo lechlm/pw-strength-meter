@@ -1,0 +1,29 @@
+{
+  "name": "pw-strength-meter",
+  "version": "1.0.0",
+  "authors": [
+    "Michael Lechl <lechl.michael@googlemail.com>"
+  ],
+  "description": "Web component for checking the password complexity.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "pw-strength-meter"
+  ],
+  "main": "pw-strength-meter.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/lechlm/pw-strength-meter/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}

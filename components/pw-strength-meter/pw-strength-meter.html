@@ -1,0 +1,224 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+
+<!--
+An element for checking the password complexity.
+
+Example:
+
+  <pw-strength-meter></pw-strength-meter>
+
+@demo
+-->
+<dom-module id="pw-strength-meter">
+
+<style>
+  :host {
+    display: inline-block;
+    @apply(--pw-strength-meter);
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  iron-icon {
+    margin-right: -3px;
+    fill: #BBBCBC;
+    --iron-icon-width: var(--pw-strength-meter-icon-size, 24px);
+    --iron-icon-height: var(--pw-strength-meter-icon-size, 24px);
+
+    @apply(--pw-strength-meter-icon);
+  }
+
+  .icon-strong {
+    fill: var(--pw-strength-meter-strong-color, #55BB4B);
+  }
+
+  .icon-medium {
+    fill: var(--pw-strength-meter-medium-color, #E9AB27);
+  }
+
+  .icon-weak {
+    fill: var(--pw-strength-meter-weak-color, #D93B26);
+  }
+</style>
+
+<template>
+  <div id="iconContainer">
+    <iron-icon icon$="[[_computeIcon(rating, 1)]]" class$="[[_computeIconClass(rating, 1)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 2)]]" class$="[[_computeIconClass(rating, 2)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 3)]]" class$="[[_computeIconClass(rating, 3)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 4)]]" class$="[[_computeIconClass(rating, 4)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 5)]]" class$="[[_computeIconClass(rating, 5)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 6)]]" class$="[[_computeIconClass(rating, 6)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 7)]]" class$="[[_computeIconClass(rating, 7)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 8)]]" class$="[[_computeIconClass(rating, 8)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 9)]]" class$="[[_computeIconClass(rating, 9)]]"></iron-icon>
+    <iron-icon icon$="[[_computeIcon(rating, 10)]]" class$="[[_computeIconClass(rating, 10)]]"></iron-icon>
+  </div>
+  <div id="weakMsg" hidden$="[[!_showWeakMsg(rating)]]">
+    <content select="[weak]"></content>
+  </div>
+  <div id="mediumMsg" hidden$="[[!_showMediumMsg(rating)]]">
+    <content select="[medium]"></content>
+  </div>
+  <div id="strongMsg" hidden$="[[!_showStrongMsg(rating)]]">
+    <content select="[strong]"></content>
+  </div>
+</template>
+
+</dom-module>
+
+<script>
+
+Polymer({
+
+  is: 'pw-strength-meter',
+
+  properties: {
+
+    /**
+    * currently entered password
+    */
+    password: {
+      type: String,
+      observer: '_passwordChanged'
+    },
+
+    /**
+    * returns the current rating depending on the currently entered password.
+    *
+    * minimum value: 0
+    *
+    * maximum value: 10
+    */
+    rating: {
+      type: Number,
+      readOnly: true
+    },
+
+    /**
+     * Icon to show for not reached rating points.
+     */
+    ratingOffIcon: {
+      type: String,
+      value: 'lock-open'
+    },
+
+    /**
+     * Icon to show for reached rating points.
+     */
+    ratingOnIcon: {
+      type: String,
+      value: 'lock'
+    }
+  },
+
+  /**
+   * Show message for weak passwords if rating is <= 4.
+   */
+  _showWeakMsg: function() {
+    return this.rating <= 4;
+  },
+
+  /**
+   * Show message for medium passwords if 4 < rating <= 8.
+   */
+  _showMediumMsg: function() {
+    return this.rating > 4 && this.rating <= 8;
+  },
+
+  /**
+   * Show message for strong passwords if rating is > 8.
+   */
+  _showStrongMsg: function() {
+    return this.rating > 8;
+  },
+
+  /**
+   * Compute witch icon to show depending on the current rating.
+   */
+  _computeIcon: function(rating, icoNo) {
+    return rating < icoNo ? this.ratingOffIcon : this.ratingOnIcon;
+  },
+
+  /**
+   * Add classes to the icons depending on the current rating.
+   */
+  _computeIconClass: function(rating, icoNo) {
+    if (this.rating < icoNo) return '';
+
+    if (this.rating <= 4) {
+      return 'icon-weak';
+    } else if (this.rating <= 8) {
+      return 'icon-medium';
+    } else {
+      return 'icon-strong';
+    }
+  },
+
+  /**
+  * determine password complexity
+  */
+  _passwordChanged: function() {
+    var rating = 0;
+
+    // a password with less than eight characters is always weak
+    if(this.password.length < 8) {
+      if (this.password) {
+        rating = 1;
+      }
+      this._setRating(rating);
+      return;
+    }
+
+    // award every unique letter
+    var letters = new Object();
+    for (var i=0; i<this.password.length; i++) {
+      letters[this.password[i]] = (letters[this.password[i]] || 0) + 1;
+      rating = rating + (0.2 / letters[this.password[i]]);
+    }
+
+    // set a maximum of 4 for length and variation of characters
+    if(rating > 4) {
+      rating = 4;
+    }
+
+    // bonus points for mixing it up
+    var variations = {
+      digits: /\d/.test(this.password),
+      lower: /[a-z]/.test(this.password),
+      upper: /[A-Z]/.test(this.password),
+      nonWords: /\W/.test(this.password),
+    }
+
+    var variationCount = 0;
+    for (var check in variations) {
+      variationCount += (variations[check] == true) ? 1.5 : 0;
+    }
+    rating = Math.round(rating + variationCount);
+
+    this._setRating(rating);
+  },
+
+  // Element Lifecycle
+
+  attached: function () {
+
+    // initialize lock icons
+    this._setRating(0);
+  }
+
+});
+
+</script>
